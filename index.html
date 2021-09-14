@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>What's up </title>
+
+<style>
+
+
+body{
+
+padding:0px;
+margin:0px;
+}
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+</style>
+<body>
+
+<canvas id="tetris" width="1000" height="1000"></canvas>
+<canvas id="tetrisDraw" width="1000" height="1000"></canvas>
+
+
+
+<script>
+	var canvas = document.getElementById('tetris');
+	var context = canvas.getContext('2d');
+	var canvas2 = document.getElementById('tetrisDraw');
+	var context2 = canvas2.getContext('2d');
+	let secretCode = [];
+	let colors = [ [0,'red'], [1,'green'], [2,'purple'], [3,'yellow'], [4,'blue'], [5,'orange'] ];
+     let colorMap = new Map(colors)
+	 
+	for(let i = 0; i< 4; i++){
+	
+		secretCode.push(colorMap.get(Math.floor(Math.random() * 6)))
+	}
+	
+	//secretCode = ["purple", "purple", "blue", "yellow"]
+	console.log(secretCode)
+context.scale(5,5);
+context2.scale(5,5);
+
+context.fillStyle= '#f3f3f3';
+context.fillRect(0,0,canvas.width,canvas.height);
+
+matrix = [
+			[0,0,0],
+			[1,1,1],
+			[0,1,0]
+
+
+
+]
+	document.addEventListener("pointerdown",onPointerDown,false)
+	document.addEventListener("pointerup",onPointerUp,false)
+	document.addEventListener("pointermove",onPointerMove,false)
+
+
+class Peg{
+	
+	constructor(x,y,radius,color){
+	    this.x = x
+		this.y = y
+		this.pos = {x:this.x,y:this.y};
+		this.color = color;
+		this.radius = radius
+	
+	}
+
+
+
+}
+let codes = []
+let codeHints = []
+for(let i = 0; i< 10; i++){
+	codes.push([])
+	codeHints.push([])
+}
+
+class Board{
+	constructor(){
+		
+	
+	}
+}
+class Round{
+	
+	constructor(){
+		this.guess = [-1,-1,-1,-1]
+	}
+}
+
+function drawPegHole(x,y,pegRadius,color){
+context.beginPath();
+context.arc(x, y, pegRadius, 0, Math.PI*2);
+context.fillStyle = color;
+context.fill();
+context.closePath();
+
+}
+
+function drawPegHoleAgain(x,y,pegRadius,color){
+context2.clearRect(0,0,canvas.width, canvas.height)
+//context2.fillStyle= 'rgba(0,0,0,0)';
+//context2.fillRect(0,0,canvas.width,canvas.height);
+
+context2.beginPath();
+context2.arc(x, y, pegRadius, 0, Math.PI*2);
+context2.fillStyle = color;
+context2.fill();
+context2.closePath();
+
+}
+
+function drawGame(){
+	for(let i = 0; i < 10; i++){
+		for(let j = 0; j < 4; j++){
+			drawPegHole(12 * j + 20,20 * i + 10, 5,'black')
+			codes[i].push(new Peg(12 * j + 20,20 * i + 10, 5,'black'))
+		}
+		for(let l = 0; l < 2;l++){
+		
+			drawPegHole((4 * 12 + 20),10 + 20 * i + (-2.5 + 5*l), 2,'black')
+			drawPegHole((4 * 12 + 20)+ 5,10 + 20* i + (-2.5 + 5*l), 2,'black')
+			codeHints[i].push(new Peg((4 * 12 + 20),10 + 20 * i + (-2.5 + 5*l), 2,'black'))
+			codeHints[i].push(new Peg((4 * 12 + 20)+ 5,10 + 20 * i + (-2.5 + 5*l), 2,'black'))
+			
+			//codeHints[i].push(new Peg((4 * 12 + 20)+ 5*l,10 + 20 * i + 2.5, 2,'black'))
+		}
+	
+
+}
+}
+function reDraw(){
+context.fillStyle= '#f3f3f3';
+context.fillRect(codes[currentGuess][0].pos.x - 20,codes[currentGuess][0].pos.y - 7,65,20);
+		
+		for(let j = 0; j < codes[currentGuess].length; j++){
+			let cur = codes[currentGuess][j]
+			drawPegHole(cur.pos.x,cur.pos.y, 5,'black')
+		}
+		for(let i =0; i< playerRound.guess.length; i++){
+				if(playerRound.guess[i] != -1){
+				context.beginPath();
+			context.arc(codes[currentGuess][i].pos.x, codes[currentGuess][i].pos.y, 5.2, 0, Math.PI*2);
+			context.fillStyle = playerRound.guess[i];
+			context.fill();
+			context.closePath();
+			//pegsPlaced++
+			playerRound.guess[(codes[currentGuess][i].pos.x-20)/12] = playerRound.guess[i]
+		}
+}
+	
+
+}
+function drawInfo(codes,codeHints){
+    
+	for(let i = 0; i < codes.length; i++){
+		let peg = codes[i][j]
+		for(let j = 0; j < codes[i].length; j++){
+			drawPegHole(peg.pos.x,peg.pos.y,peg.color)
+		}
+		for(let l = 0; l < codeHints[i].length; l++){
+			drawPegHole(peg.pos.x,peg.pos.y,peg.color)
+			
+		}
+	
+
+}
+}
+let colorPegs = []
+function drawPegs(){
+	for(let i=0; i<colors.length;i++){
+		drawPegHole((6 * 12 + 20),10 + 20 * i,5,colorMap.get(i))
+		colorPegs.push(new Peg((6 * 12 + 20),10 + 20 * i,5,colorMap.get(i)))
+	}
+
+}
+function dist(a,b,c,d){
+//console.log(Math.sqrt(Math.pow(a-c,2)+ Math.pow(b-d,2)))
+    return Math.sqrt(Math.pow(a-c,2)+ Math.pow(b-d,2))
+	}
+function onPointerUp(event){
+	console.log(event.offsetX+ ' ' + event.offsetY)
+	context2.clearRect(0,0,canvas.width, canvas.height)
+	console.log('cleared on up')
+		
+		//let pos = playerRound.guess[(codes[currentGuess][0].pos.x-20)/12]
+		//console.log(playerRound.guess[(codes[currentGuess][3].pos.x-20)/12])
+		if(hasPeg){
+	for(let i = 0; i< codes[currentGuess].length; i++){
+	//debugger
+		if((5.5 >= dist(event.offsetX/5,event.offsetY/5,codes[currentGuess][i].pos.x,codes[currentGuess][i].pos.y)) && (playerRound.guess[(codes[currentGuess][i].pos.x-20)/12] < 0 )){
+			
+			console.log('found')
+			//debugger
+			context.beginPath();
+			context.arc(codes[currentGuess][i].pos.x, codes[currentGuess][i].pos.y, 5.1, 0, Math.PI*2);
+			context.fillStyle = playerPeg.color;
+			context.fill();
+			context.closePath();
+			pegsPlaced++
+				console.log(pegsPlaced + ' in up ' + 'pegs placed')
+			playerRound.guess[(codes[currentGuess][i].pos.x-20)/12] = playerPeg.color
+			if(pegsPlaced >3){
+				nextRound()
+			}
+			
+			console.log((codes[currentGuess][i].pos.x-20)/12)
+			break
+		}
+	}
+	}
+	hasPeg = false
+}
+function nextRound(){
+checkHints()
+currentGuess++
+pegsPlaced = 0
+playerRound = new Round()
+		
+}
+function checkHints(){	
+//debugger
+	let start = Math.floor(Math.random() * 4);
+	let length = codeHints[currentGuess].length
+	let checkArray = [-1,-1,-1,-1]
+	let place = 0;
+	for(let i = start; i< length + start; i++){
+		if(secretCode[i%length] == playerRound.guess[i%length]){
+			context.beginPath();
+			context.arc(codeHints[currentGuess][place].pos.x, codeHints[currentGuess][place].pos.y, 2.3, 0, Math.PI*2);
+			context.fillStyle = 'brown';
+			context.fill();
+			context.closePath();
+			checkArray[i%length] = 1
+			place++
+			
+			
+		}
+	}
+	if(place > 3){
+		console.log('Game Over')
+	}
+	let match = [...checkArray]
+	//debugger
+	for(let j= 0; j< length; j++){
+	
+		if(checkArray[j] < 0){
+	
+			for(let l = 0; l < length; l++){
+				if(match[l] < 0 && playerRound.guess[j] ==  secretCode[l]){
+					context.beginPath();
+			context.arc(codeHints[currentGuess][place].pos.x, codeHints[currentGuess][place].pos.y, 2.3, 0, Math.PI*2);
+			context.fillStyle = 'white';
+			context.fill();
+			context.closePath();
+			match[l] = 1
+			place++
+			break
+				}
+			}
+		}
+	}
+}
+function onPointerDown(event){
+	//console.log(event.offsetX+ ' ' + event.offsetY)
+	//debugger
+	console.log('checking player peg')
+		for(let i = 0; i< colorPegs.length; i++){
+		if(5 >= dist(event.offsetX/5,event.offsetY/5,colorPegs[i].pos.x,colorPegs[i].pos.y)){
+			hasPeg = true;
+			console.log('hasPeg')
+			playerPeg.pos.x = event.offsetX/5
+			playerPeg.pos.y = event.offsetY/5
+			playerPeg.color = colorPegs[i].color
+			
+			break
+		}
+	
+	}
+	console.log('checking placed pegs')
+		for(let i = 0; i< codes[currentGuess].length; i++){
+		//debugger
+		if(5 >= dist(event.offsetX/5,event.offsetY/5,codes[currentGuess][i].pos.x,codes[currentGuess][i].pos.y) && playerRound.guess[(codes[currentGuess][i].pos.x-20)/12] != -1&& hasPeg == false){
+			hasPeg = true;
+			console.log('hasPeg')
+			playerPeg.pos.x = event.offsetX/5
+			playerPeg.pos.y = event.offsetY/5
+			playerPeg.color = playerRound.guess[(codes[currentGuess][i].pos.x-20)/12]
+			playerRound.guess[(codes[currentGuess][i].pos.x-20)/12] = -1
+			pegsPlaced--
+			console.log(pegsPlaced + ' ' + 'pegs placed')
+			reDraw()
+			
+			break
+		}
+	
+	}
+}
+
+function onPointerMove(event){
+			playerPeg.pos.x = event.offsetX/5
+			playerPeg.pos.y = event.offsetY/5
+			if(hasPeg){
+			drawPegHoleAgain(playerPeg.pos.x,playerPeg.pos.y,5,playerPeg.color)
+			}
+		
+
+	
+
+}
+function update(){
+
+	//draw(p);
+	
+	if(!initizalized){
+		drawGame()
+		drawPegs()
+		initizalized = true
+	}
+	if(hasPeg){
+		//drawPegHoleAgain(playerPeg.pos.x,playerPeg.pos.y,5,playerPeg.color)
+		//console.log('draw')
+		//console.log(playerPeg)
+	}
+	
+	requestAnimationFrame(update);
+
+}
+//debugger
+let playerPeg = new Peg(-20,-20,5,'black')
+
+
+
+var pegsPlaced = 0;
+var initizalized = false;
+var hasPeg = false;
+var currentGuess = 0;
+var currentRound = []
+var playerRound = new Round()
+requestAnimationFrame(update)
+
+
+</script>
+
+
+
+</body>
+
+
+</html>
