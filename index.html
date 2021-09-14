@@ -19,11 +19,17 @@ canvas {
     left: 0;
 }
 
+#pegPicker,#tetrisDraw{
+    top: 0;
+    left: 0;
+	position: fixed;
+}
 </style>
 <body>
 
 <canvas id="tetris" width="1000" height="1000"></canvas>
 <canvas id="tetrisDraw" width="1000" height="1000"></canvas>
+<canvas id="pegPicker" width="1000" height="1000"></canvas>
 
 
 
@@ -32,6 +38,8 @@ canvas {
 	var context = canvas.getContext('2d');
 	var canvas2 = document.getElementById('tetrisDraw');
 	var context2 = canvas2.getContext('2d');
+	var canvas3 = document.getElementById('pegPicker');
+	var context3 = canvas3.getContext('2d');
 	let secretCode = [];
 	let colors = [ [0,'red'], [1,'green'], [2,'purple'], [3,'yellow'], [4,'blue'], [5,'orange'] ];
      let colorMap = new Map(colors)
@@ -45,6 +53,7 @@ canvas {
 	console.log(secretCode)
 context.scale(5,5);
 context2.scale(5,5);
+context3.scale(5,5);
 
 context.fillStyle= '#f3f3f3';
 context.fillRect(0,0,canvas.width,canvas.height);
@@ -102,6 +111,14 @@ context.arc(x, y, pegRadius, 0, Math.PI*2);
 context.fillStyle = color;
 context.fill();
 context.closePath();
+
+}
+function drawPegHoleSticky(x,y,pegRadius,color){
+context3.beginPath();
+context3.arc(x, y, pegRadius, 0, Math.PI*2);
+context3.fillStyle = color;
+context3.fill();
+context3.closePath();
 
 }
 
@@ -177,7 +194,7 @@ function drawInfo(codes,codeHints){
 let colorPegs = []
 function drawPegs(){
 	for(let i=0; i<colors.length;i++){
-		drawPegHole((6 * 12 + 20),10 + 20 * i,5,colorMap.get(i))
+		drawPegHoleSticky((6 * 12 + 20),10 + 20 * i,5,colorMap.get(i))
 		colorPegs.push(new Peg((6 * 12 + 20),10 + 20 * i,5,colorMap.get(i)))
 	}
 
@@ -188,6 +205,7 @@ function dist(a,b,c,d){
 	}
 function onPointerUp(event){
 	console.log(event.offsetX+ ' ' + event.offsetY)
+
 	context2.clearRect(0,0,canvas.width, canvas.height)
 	console.log('cleared on up')
 		
@@ -196,7 +214,7 @@ function onPointerUp(event){
 		if(hasPeg){
 	for(let i = 0; i< codes[currentGuess].length; i++){
 	//debugger
-		if((5.5 >= dist(event.offsetX/5,event.offsetY/5,codes[currentGuess][i].pos.x,codes[currentGuess][i].pos.y)) && (playerRound.guess[(codes[currentGuess][i].pos.x-20)/12] < 0 )){
+		if((5.5 >= dist(event.offsetX/5,event.offsetY/5 + window.scrollY/5,codes[currentGuess][i].pos.x,codes[currentGuess][i].pos.y)) && (playerRound.guess[(codes[currentGuess][i].pos.x-20)/12] < 0 )){
 			
 			console.log('found')
 			//debugger
@@ -277,8 +295,8 @@ function onPointerDown(event){
 		if(5 >= dist(event.offsetX/5,event.offsetY/5,colorPegs[i].pos.x,colorPegs[i].pos.y)){
 			hasPeg = true;
 			console.log('hasPeg')
-			playerPeg.pos.x = event.offsetX/5
-			playerPeg.pos.y = event.offsetY/5
+			playerPeg.pos.x = event.offsetX/5 
+			playerPeg.pos.y = event.offsetY/5 
 			playerPeg.color = colorPegs[i].color
 			
 			break
@@ -307,7 +325,7 @@ function onPointerDown(event){
 
 function onPointerMove(event){
 			playerPeg.pos.x = event.offsetX/5
-			playerPeg.pos.y = event.offsetY/5
+			playerPeg.pos.y = event.offsetY/5 
 			if(hasPeg){
 			drawPegHoleAgain(playerPeg.pos.x,playerPeg.pos.y,5,playerPeg.color)
 			}
